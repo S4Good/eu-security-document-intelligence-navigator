@@ -57,7 +57,7 @@ See [Source Policy](docs/source-policy.md).
 
 - [x] Azure resource group and cost budget
 - [x] Public GitHub repository
-- [ ] Source registry and licence verification
+- [x] Source registry and licence verification
 - [ ] Local ingestion pipeline
 - [ ] Azure Document Intelligence integration
 - [ ] Azure AI Search integration

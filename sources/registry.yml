@@ -1,3 +1,82 @@
 version: 1
 project: eu-security-document-intelligence-navigator
-sources: []
+registry_updated_at: "2026-11-09"
+
+sources:
+  - id: eu-gdpr-de
+    title: "Datenschutz-Grundverordnung (DSGVO)"
+    authority: "European Union"
+    jurisdiction: "EU"
+    document_type: "regulation"
+    language: "de"
+    celex: "32016R0679"
+    canonical_url: "https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32016R0679"
+    reuse_basis:
+      type: "EUR-Lex legal document reuse"
+      reference_url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html?locale=en"
+    ingestion:
+      status: "planned"
+      content_sha256: null
+      retrieved_at: null
+
+  - id: eu-ai-act-de
+    title: "Verordnung über künstliche Intelligenz (EU AI Act)"
+    authority: "European Union"
+    jurisdiction: "EU"
+    document_type: "regulation"
+    language: "de"
+    celex: "32024R1689"
+    canonical_url: "https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32024R1689"
+    reuse_basis:
+      type: "EUR-Lex legal document reuse"
+      reference_url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html?locale=en"
+    ingestion:
+      status: "planned"
+      content_sha256: null
+      retrieved_at: null
+
+  - id: eu-nis2-de
+    title: "NIS-2-Richtlinie"
+    authority: "European Union"
+    jurisdiction: "EU"
+    document_type: "directive"
+    language: "de"
+    celex: "32022L2555"
+    canonical_url: "https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32022L2555"
+    reuse_basis:
+      type: "EUR-Lex legal document reuse"
+      reference_url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html?locale=en"
+    ingestion:
+      status: "planned"
+      content_sha256: null
+      retrieved_at: null
+
+  - id: de-bdsg
+    title: "Bundesdatenschutzgesetz (BDSG)"
+    authority: "Bundesministerium der Justiz / Bundesamt für Justiz"
+    jurisdiction: "Germany"
+    document_type: "statute"
+    language: "de"
+    canonical_url: "https://www.gesetze-im-internet.de/bdsg_2018/BJNR209710017.html"
+    reuse_basis:
+      type: "official work under UrhG § 5"
+      reference_url: "https://www.gesetze-im-internet.de/urhg/__5.html"
+    ingestion:
+      status: "planned"
+      content_sha256: null
+      retrieved_at: null
+
+  - id: de-bsig
+    title: "BSI-Gesetz (BSIG)"
+    authority: "Bundesministerium der Justiz / Bundesamt für Justiz"
+    jurisdiction: "Germany"
+    document_type: "statute"
+    language: "de"
+    canonical_url: "https://www.gesetze-im-internet.de/bsig_2025/BJNR12D0B0025.html"
+    reuse_basis:
+      type: "official work under UrhG § 5"
+      reference_url: "https://www.gesetze-im-internet.de/urhg/__5.html"
+    ingestion:
+      status: "planned"
+      content_sha256: null
+      retrieved_at: null
