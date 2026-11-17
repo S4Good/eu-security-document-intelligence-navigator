@@ -59,6 +59,7 @@ See [Source Policy](docs/source-policy.md).
 - [x] Public GitHub repository
 - [x] Source registry and licence verification
 - [x] Local ingestion pipeline
+- [x] Citation-ready legal section chunking
 - [ ] Azure Document Intelligence integration
 - [ ] Azure AI Search integration
 - [ ] Content Safety integration
