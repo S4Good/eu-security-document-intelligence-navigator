@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query
+
+from eu_security_navigator.search import search_citations
 
 app = FastAPI(
     title="EU Security & Privacy Document Intelligence Navigator",
@@ -21,4 +23,26 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "eu-security-document-intelligence-navigator",
+    }
+
+@app.get("/api/v1/search")
+def search(
+    q: str = Query(..., min_length=2, max_length=200),
+    limit: int = Query(10, ge=1, le=50),
+) -> dict[str, object]:
+    """Search locally processed document citations."""
+    query = q.strip()
+
+    if len(query) < 2:
+        raise HTTPException(
+            status_code=422,
+            detail="q must contain at least two non-space characters.",
+        )
+
+    results = search_citations(query, limit=limit)
+
+    return {
+        "query": query,
+        "count": len(results),
+        "results": results,
     }
