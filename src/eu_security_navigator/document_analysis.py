@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from azure.ai.documentintelligence.models import DocumentContentFormat
@@ -52,3 +53,11 @@ def analyze_local_pdf(document_path: Path, pages: str = "1-2") -> dict[str, obje
         "content": content,
         "citations": citations,
     }
+
+def save_analysis_result(result: dict[str, object], output_path: Path) -> None:
+    """Write a non-secret Document Intelligence result to local processed storage."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )

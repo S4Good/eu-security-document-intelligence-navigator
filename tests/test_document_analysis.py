@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -6,7 +7,10 @@ from azure.ai.documentintelligence.models import DocumentContentFormat
 from azure.core.exceptions import HttpResponseError
 
 import eu_security_navigator.document_analysis as document_analysis
-from eu_security_navigator.document_analysis import analyze_local_pdf
+from eu_security_navigator.document_analysis import (
+    analyze_local_pdf,
+    save_analysis_result,
+)
 
 
 def test_analyze_local_pdf_has_safe_default_pages() -> None:
@@ -158,3 +162,16 @@ def test_analyze_local_pdf_preserves_file_not_found_behavior(
 
     with pytest.raises(FileNotFoundError, match=r"PDF not found: .*missing\.pdf"):
         analyze_local_pdf(document_path)
+
+
+def test_save_analysis_result_writes_json(tmp_path) -> None:
+    output_path = tmp_path / "result.json"
+    result = {
+        "model_id": "prebuilt-layout",
+        "page_count": 2,
+        "content": "Example extracted content.",
+    }
+
+    save_analysis_result(result, output_path)
+
+    assert json.loads(output_path.read_text(encoding="utf-8")) == result
