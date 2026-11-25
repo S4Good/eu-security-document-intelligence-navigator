@@ -12,7 +12,10 @@ def test_search_citations_returns_page_level_result(tmp_path) -> None:
                     {
                         "source": "bsi-standard-200-1.pdf",
                         "page_number": 20,
-                        "content": "<!-- PageHeader=\"Management\" --> Management muss Informationssicherheit steuern.",
+                        "content": (
+                        '<!-- PageHeader="Management" --> '
+                            "Management muss Informationssicherheit steuern."
+                        ),
                     }
                 ]
             }
