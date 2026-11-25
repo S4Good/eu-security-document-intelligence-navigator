@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
 
 from eu_security_navigator.search import search_citations
 
@@ -25,6 +28,7 @@ def health() -> dict[str, str]:
         "service": "eu-security-document-intelligence-navigator",
     }
 
+
 @app.get("/api/v1/search")
 def search(
     q: str = Query(..., min_length=2, max_length=200),
@@ -46,3 +50,8 @@ def search(
         "count": len(results),
         "results": results,
     }
+
+
+@app.get("/search", response_class=FileResponse, include_in_schema=False)
+def search_page() -> FileResponse:
+    return FileResponse(Path(__file__).with_name("search.html"), media_type="text/html")

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document Intelligence Navigator</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --text: #1d1d1f;
+            --muted: #515154;
+            --surface: #f5f5f7;
+            --line: #d2d2d7;
+            --blue: #0066cc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--surface);
+            color: var(--text);
+            font: 1rem/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI",
+                "Helvetica Neue", Arial, sans-serif;
+        }
+
+        main {
+            width: min(100% - 2rem, 52rem);
+            margin: clamp(2.5rem, 8vw, 6rem) auto 4rem;
+        }
+
+        h1 {
+            max-width: 17ch;
+            margin: 0 auto;
+            text-align: center;
+            font-size: clamp(2.25rem, 6vw, 4rem);
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -.045em;
+        }
+
+        h1+p {
+            margin: 1rem 0 2.5rem;
+            text-align: center;
+            color: var(--muted);
+            font-size: 1.125rem;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: .625rem;
+        }
+
+        label {
+            grid-column: 1 / -1;
+            font-weight: 600;
+        }
+
+        input,
+        button {
+            min-height: 48px;
+            padding: .65rem 1.15rem;
+            border-radius: 999px;
+            font: inherit;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #838388;
+            background: white;
+            color: var(--text);
+        }
+
+        button {
+            border: 0;
+            background: var(--blue);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056ad;
+        }
+
+        #status {
+            margin: 1.5rem 0 .75rem;
+            color: var(--muted);
+        }
+
+        #results {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #results li {
+            margin-bottom: .875rem;
+            padding: clamp(1rem, 4vw, 1.75rem);
+            border: 1px solid var(--line);
+            border-radius: 1.25rem;
+            background: white;
+            overflow-wrap: anywhere;
+        }
+
+        #results strong {
+            font-size: 1.125rem;
+            line-height: 1.35;
+        }
+
+        #results p {
+            margin: .55rem 0 .8rem;
+        }
+
+        a {
+            color: var(--blue);
+            text-underline-offset: .2em;
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--blue);
+            outline-offset: 3px;
+        }
+
+        @media (max-width: 420px) {
+            form {
+                grid-template-columns: 1fr;
+            }
+
+            form button {
+                justify-self: start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Document Intelligence Navigator</h1>
+        <p>Search the demo corpus: BSI Standard 200-1, pages 20–21.</p>
+        <form id="search-form">
+            <label for="query">Search term</label>
+            <input id="query" type="search" required minlength="2" maxlength="200" value="Informationssicherheit">
+            <button type="submit">Search</button>
+        </form>
+        <p id="status" role="status"></p>
+        <ol id="results"></ol>
+    </main>
+    <script>
+        const form = document.getElementById("search-form");
+        const input = document.getElementById("query");
+        const status = document.getElementById("status");
+        const results = document.getElementById("results");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            results.replaceChildren();
+            const query = input.value.trim();
+            if (query.length < 2) {
+                status.textContent = "Enter at least two characters.";
+                return;
+            }
+            status.textContent = "Searching…";
+
+            try {
+                const params = new URLSearchParams({ q: query });
+                const response = await fetch(`/api/v1/search?${params}`);
+                if (!response.ok) throw new Error("Search request failed");
+                const data = await response.json();
+
+                for (const result of data.results) {
+                    const item = document.createElement("li");
+                    const title = document.createElement("strong");
+                    title.textContent = result.citation_label;
+                    const excerpt = document.createElement("p");
+                    excerpt.textContent = result.excerpt;
+                    item.append(title, excerpt);
+
+                    if (result.official_url?.startsWith("https://")) {
+                        const link = document.createElement("a");
+                        link.href = result.official_url;
+                        link.textContent = "Open official source";
+                        item.append(link);
+                    }
+                    results.append(item);
+                }
+                status.textContent = data.count
+                    ? `${data.count} ${data.count === 1 ? "result" : "results"}`
+                    : "No matching pages.";
+            } catch {
+                status.textContent = "Search failed. Please try again.";
+            }
+        });
+    </script>
+</body>
+
+</html>
