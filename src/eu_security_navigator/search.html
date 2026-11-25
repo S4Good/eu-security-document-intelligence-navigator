@@ -4,15 +4,25 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Document Intelligence Navigator</title>
+    <title>Document Intelligence Navigator — Offline Search</title>
     <style>
         :root {
             color-scheme: light;
             --text: #1d1d1f;
             --muted: #515154;
             --surface: #f5f5f7;
+            --card: #ffffff;
             --line: #d2d2d7;
             --blue: #0066cc;
+            --blue-dark: #0056ad;
+            --danger: #b42318;
+            --danger-bg: #fef3f2;
+            --danger-line: #fecdca;
+            --warn: #8a4b00;
+            --warn-bg: #fff7e6;
+            --badge-pdf: #e8f1fb;
+            --badge-json: #edf7ed;
+            --badge-json-text: #1b5e20;
         }
 
         * {
@@ -23,73 +33,286 @@
             margin: 0;
             background: var(--surface);
             color: var(--text);
-            font: 1rem/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI",
+            font: 1rem/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI",
                 "Helvetica Neue", Arial, sans-serif;
         }
 
         main {
-            width: min(100% - 2rem, 52rem);
-            margin: clamp(2.5rem, 8vw, 6rem) auto 4rem;
+            width: min(100% - 2rem, 58rem);
+            margin: clamp(1.75rem, 5vw, 3.5rem) auto 4rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: .25rem .75rem;
+            border-radius: 999px;
+            background: #e8f1fb;
+            color: var(--blue-dark);
+            font-size: .85rem;
+            font-weight: 600;
+            margin-bottom: .75rem;
         }
 
         h1 {
-            max-width: 17ch;
             margin: 0 auto;
-            text-align: center;
-            font-size: clamp(2.25rem, 6vw, 4rem);
+            font-size: clamp(1.9rem, 4.8vw, 3rem);
             font-weight: 700;
-            line-height: 1.05;
-            letter-spacing: -.045em;
+            line-height: 1.1;
+            letter-spacing: -.035em;
         }
 
-        h1+p {
-            margin: 1rem 0 2.5rem;
-            text-align: center;
+        header p {
+            margin: .65rem auto 0;
+            max-width: 44rem;
             color: var(--muted);
-            font-size: 1.125rem;
+            font-size: 1rem;
         }
 
-        form {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 1.15rem;
+            padding: clamp(1rem, 3vw, 1.5rem);
+            margin-bottom: 1.25rem;
+        }
+
+        .session-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            margin-bottom: .9rem;
+        }
+
+        .session-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .session-meta {
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--line);
+            border-radius: .9rem;
+            padding: 1.15rem;
+            text-align: center;
+            background: #fafafc;
+            transition: border-color .15s ease, background-color .15s ease;
+        }
+
+        .dropzone.dragover {
+            border-color: var(--blue);
+            background: #f0f7ff;
+        }
+
+        .dropzone p {
+            margin: .35rem 0 0;
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
             gap: .625rem;
+            justify-content: center;
+            align-items: center;
         }
 
-        label {
-            grid-column: 1 / -1;
-            font-weight: 600;
+        input[type="file"] {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
         }
 
-        input,
-        button {
-            min-height: 48px;
-            padding: .65rem 1.15rem;
+        button,
+        .btn-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: .55rem 1.05rem;
             border-radius: 999px;
+            border: 0;
             font: inherit;
+            font-size: .95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
         }
 
-        input {
-            width: 100%;
-            border: 1px solid #838388;
-            background: white;
+        .btn-primary {
+            background: var(--blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--blue-dark);
+        }
+
+        .btn-secondary {
+            background: #e8e8ed;
             color: var(--text);
         }
 
-        button {
-            border: 0;
-            background: var(--blue);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
+        .btn-secondary:hover {
+            background: #dcdce3;
         }
 
-        button:hover {
-            background: #0056ad;
+        .btn-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid var(--danger-line);
+        }
+
+        .btn-danger:hover {
+            background: #fee4e2;
+        }
+
+        .btn-danger:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .file-list {
+            list-style: none;
+            margin: 1rem 0 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+
+        .file-item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: .5rem;
+            padding: .55rem .8rem;
+            border: 1px solid var(--line);
+            border-radius: .75rem;
+            background: #fcfcfd;
+        }
+
+        .file-item-main {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: .5rem;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: .15rem .55rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+        }
+
+        .badge-pdf {
+            background: var(--badge-pdf);
+            color: var(--blue-dark);
+        }
+
+        .badge-json {
+            background: var(--badge-json);
+            color: var(--badge-json-text);
+        }
+
+        .badge-warn {
+            background: var(--warn-bg);
+            color: var(--warn);
+            text-transform: none;
+            font-weight: 600;
+        }
+
+        .remove-btn {
+            min-height: 30px;
+            padding: .2rem .65rem;
+            font-size: .82rem;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--line);
+        }
+
+        .remove-btn:hover {
+            color: var(--danger);
+            border-color: var(--danger-line);
+            background: var(--danger-bg);
+        }
+
+        .alert {
+            margin-top: .85rem;
+            padding: .75rem .95rem;
+            border-radius: .75rem;
+            font-size: .92rem;
+        }
+
+        .alert-error {
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-line);
+            color: var(--danger);
+        }
+
+        .alert ul {
+            margin: .35rem 0 0 1.15rem;
+            padding: 0;
+        }
+
+        form#search-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: .625rem;
+            align-items: end;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: .35rem;
+        }
+
+        label.field-label {
+            font-weight: 600;
+            font-size: .92rem;
+        }
+
+        input[type="search"],
+        select {
+            min-height: 46px;
+            padding: .6rem 1rem;
+            border-radius: 999px;
+            border: 1px solid #838388;
+            background: white;
+            color: var(--text);
+            font: inherit;
+        }
+
+        input[type="search"] {
+            width: 100%;
         }
 
         #status {
-            margin: 1.5rem 0 .75rem;
+            margin: 1rem 0 .75rem;
             color: var(--muted);
+            font-size: .95rem;
         }
 
         #results {
@@ -99,40 +322,109 @@
         }
 
         #results li {
-            margin-bottom: .875rem;
-            padding: clamp(1rem, 4vw, 1.75rem);
+            margin-bottom: .85rem;
+            padding: clamp(1rem, 3vw, 1.4rem);
             border: 1px solid var(--line);
-            border-radius: 1.25rem;
-            background: white;
+            border-radius: 1rem;
+            background: var(--card);
             overflow-wrap: anywhere;
         }
 
-        #results strong {
-            font-size: 1.125rem;
-            line-height: 1.35;
+        .result-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .45rem;
         }
 
-        #results p {
-            margin: .55rem 0 .8rem;
+        .result-filename {
+            font-size: 1.05rem;
+            font-weight: 700;
         }
 
-        a {
+        .result-location {
+            font-family: Consolas, "SF Mono", "Courier New", monospace;
+            font-size: .86rem;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: .45rem;
+            padding: .1rem .45rem;
+            color: var(--text);
+        }
+
+        .result-excerpt {
+            margin: .45rem 0 .8rem;
+            color: var(--text);
+        }
+
+        .result-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            align-items: center;
+        }
+
+        a.action-link {
             color: var(--blue);
+            font-weight: 600;
             text-underline-offset: .2em;
+        }
+
+        button.action-btn {
+            min-height: 34px;
+            padding: .3rem .8rem;
+            font-size: .88rem;
+        }
+
+        #field-inspector {
+            display: none;
+        }
+
+        #field-inspector.visible {
+            display: block;
+        }
+
+        .inspector-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .65rem;
+        }
+
+        .inspector-header h3 {
+            margin: 0;
+            font-size: 1.02rem;
+        }
+
+        pre.json-preview {
+            margin: .5rem 0 0;
+            padding: .85rem;
+            border-radius: .75rem;
+            background: #f8f9fb;
+            border: 1px solid var(--line);
+            overflow-x: auto;
+            font-family: Consolas, "SF Mono", "Courier New", monospace;
+            font-size: .88rem;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .hidden {
+            display: none;
         }
 
         :focus-visible {
             outline: 3px solid var(--blue);
-            outline-offset: 3px;
+            outline-offset: 2px;
         }
 
-        @media (max-width: 420px) {
-            form {
+        @media (max-width: 600px) {
+            form#search-form {
                 grid-template-columns: 1fr;
-            }
-
-            form button {
-                justify-self: start;
             }
         }
     </style>
@@ -140,61 +432,405 @@
 
 <body>
     <main>
-        <h1>Document Intelligence Navigator</h1>
-        <p>Search the demo corpus: BSI Standard 200-1, pages 20–21.</p>
-        <form id="search-form">
-            <label for="query">Search term</label>
-            <input id="query" type="search" required minlength="2" maxlength="200" value="Informationssicherheit">
-            <button type="submit">Search</button>
-        </form>
+        <header>
+            <span class="pill">Offline · In-Memory Session · Localhost Only</span>
+            <h1>Document Intelligence Navigator</h1>
+            <p>
+                Open local text-based PDFs and JSON exports, search across files offline,
+                jump directly to cited PDF pages or nested JSON fields, and clear your session anytime.
+            </p>
+        </header>
+
+        <section class="card" aria-labelledby="session-heading">
+            <div class="session-header">
+                <div>
+                    <h2 id="session-heading">Session Documents</h2>
+                    <div id="session-meta" class="session-meta">0 files loaded in memory</div>
+                </div>
+                <button id="clear-session-btn" type="button" class="btn-danger" disabled>
+                    Clear session
+                </button>
+            </div>
+
+            <div id="dropzone" class="dropzone">
+                <div class="actions">
+                    <label for="file-input" class="btn-label btn-primary">
+                        Open PDF / JSON files
+                    </label>
+                    <input id="file-input" type="file" multiple accept=".pdf,.json,application/pdf,application/json">
+                </div>
+                <p>
+                    Drag and drop files here or click to select multiple files.
+                    Text-based PDFs and JSON only (up to 25 MB/file, 50 files/session).
+                </p>
+            </div>
+
+            <div id="import-errors" class="alert alert-error hidden" role="alert"></div>
+            <ul id="file-list" class="file-list" aria-label="Loaded session files"></ul>
+        </section>
+
+        <section class="card" aria-label="Search imported documents">
+            <form id="search-form">
+                <div class="field-group">
+                    <label for="query" class="field-label">Search across session files</label>
+                    <input id="query" type="search" required minlength="2" maxlength="200"
+                        placeholder="Enter a phrase, control ID, or term…">
+                </div>
+                <div class="field-group">
+                    <label for="file-type-filter" class="field-label">Type</label>
+                    <select id="file-type-filter" aria-label="Filter by file type">
+                        <option value="">All files</option>
+                        <option value="pdf">PDF only</option>
+                        <option value="json">JSON only</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Search</button>
+            </form>
+        </section>
+
         <p id="status" role="status"></p>
+
+        <section id="field-inspector" class="card" aria-live="polite">
+            <div class="inspector-header">
+                <h3 id="inspector-title">JSON Field Inspector</h3>
+                <button id="inspector-close" type="button" class="remove-btn">Close</button>
+            </div>
+            <div id="inspector-path" class="result-location"></div>
+            <pre id="inspector-value" class="json-preview"></pre>
+            <p class="session-meta" id="inspector-parent-label"></p>
+            <pre id="inspector-parent" class="json-preview"></pre>
+        </section>
+
         <ol id="results"></ol>
     </main>
-    <script>
-        const form = document.getElementById("search-form");
-        const input = document.getElementById("query");
-        const status = document.getElementById("status");
-        const results = document.getElementById("results");
 
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            results.replaceChildren();
-            const query = input.value.trim();
-            if (query.length < 2) {
-                status.textContent = "Enter at least two characters.";
+    <script>
+        const fileInput = document.getElementById("file-input");
+        const dropzone = document.getElementById("dropzone");
+        const fileList = document.getElementById("file-list");
+        const sessionMeta = document.getElementById("session-meta");
+        const clearSessionBtn = document.getElementById("clear-session-btn");
+        const importErrors = document.getElementById("import-errors");
+        const form = document.getElementById("search-form");
+        const queryInput = document.getElementById("query");
+        const fileTypeFilter = document.getElementById("file-type-filter");
+        const statusEl = document.getElementById("status");
+        const resultsEl = document.getElementById("results");
+        const inspector = document.getElementById("field-inspector");
+        const inspectorTitle = document.getElementById("inspector-title");
+        const inspectorPath = document.getElementById("inspector-path");
+        const inspectorValue = document.getElementById("inspector-value");
+        const inspectorParentLabel = document.getElementById("inspector-parent-label");
+        const inspectorParent = document.getElementById("inspector-parent");
+        const inspectorClose = document.getElementById("inspector-close");
+
+        let currentDocumentCount = 0;
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return `${bytes} B`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        }
+
+        function hideInspector() {
+            inspector.classList.remove("visible");
+            inspectorValue.textContent = "";
+            inspectorParent.textContent = "";
+        }
+
+        function renderErrors(errors) {
+            importErrors.replaceChildren();
+            if (!errors || errors.length === 0) {
+                importErrors.classList.add("hidden");
                 return;
             }
-            status.textContent = "Searching…";
+            const heading = document.createElement("strong");
+            heading.textContent = errors.length === 1
+                ? "1 file could not be imported:"
+                : `${errors.length} files could not be imported:`;
+            const list = document.createElement("ul");
+            for (const err of errors) {
+                const li = document.createElement("li");
+                li.textContent = `${err.filename}: ${err.error}`;
+                list.append(li);
+            }
+            importErrors.append(heading, list);
+            importErrors.classList.remove("hidden");
+        }
+
+        function renderSession(session) {
+            currentDocumentCount = session.document_count;
+            clearSessionBtn.disabled = currentDocumentCount === 0;
+            sessionMeta.textContent = currentDocumentCount === 0
+                ? "0 files loaded in memory"
+                : `${currentDocumentCount} ${currentDocumentCount === 1 ? "file" : "files"} loaded in memory (${formatBytes(session.total_bytes)})`;
+
+            fileList.replaceChildren();
+            for (const doc of session.documents) {
+                const item = document.createElement("li");
+                item.className = "file-item";
+
+                const left = document.createElement("div");
+                left.className = "file-item-main";
+
+                const typeBadge = document.createElement("span");
+                typeBadge.className = `badge ${doc.file_type === "pdf" ? "badge-pdf" : "badge-json"}`;
+                typeBadge.textContent = doc.file_type === "pdf"
+                    ? `PDF · ${doc.page_count} ${doc.page_count === 1 ? "page" : "pages"}`
+                    : `JSON · ${doc.field_count} ${doc.field_count === 1 ? "field" : "fields"}`;
+
+                const name = document.createElement("strong");
+                name.textContent = doc.filename;
+
+                const size = document.createElement("span");
+                size.className = "session-meta";
+                size.textContent = formatBytes(doc.size_bytes);
+
+                left.append(typeBadge, name, size);
+
+                for (const warning of doc.warnings || []) {
+                    const warnBadge = document.createElement("span");
+                    warnBadge.className = "badge badge-warn";
+                    warnBadge.textContent = warning;
+                    left.append(warnBadge);
+                }
+
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "remove-btn";
+                removeBtn.textContent = "Remove";
+                removeBtn.addEventListener("click", () => removeDocument(doc.document_id));
+
+                item.append(left, removeBtn);
+                fileList.append(item);
+            }
+        }
+
+        async function loadSession() {
+            try {
+                const response = await fetch("/api/v1/session");
+                if (!response.ok) return;
+                const session = await response.json();
+                renderSession(session);
+            } catch {
+                statusEl.textContent = "Could not load session state.";
+            }
+        }
+
+        async function uploadFiles(selectedFiles) {
+            if (!selectedFiles || selectedFiles.length === 0) return;
+
+            renderErrors([]);
+            hideInspector();
+            statusEl.textContent = `Indexing ${selectedFiles.length} ${selectedFiles.length === 1 ? "file" : "files"} in memory…`;
+
+            const formData = new FormData();
+            for (const file of selectedFiles) {
+                formData.append("files", file, file.name);
+            }
 
             try {
-                const params = new URLSearchParams({ q: query });
+                const response = await fetch("/api/v1/session/files", {
+                    method: "POST",
+                    body: formData,
+                });
+                const payload = await response.json();
+
+                if (payload.session) {
+                    renderSession(payload.session);
+                }
+                renderErrors(payload.errors || []);
+
+                const importedCount = (payload.imported || []).length;
+                if (importedCount > 0) {
+                    statusEl.textContent = `Indexed ${importedCount} ${importedCount === 1 ? "file" : "files"} in memory. Ready to search.`;
+                    if (queryInput.value.trim().length >= 2) {
+                        await runSearch();
+                    }
+                } else {
+                    statusEl.textContent = payload.detail || "No files were imported.";
+                }
+            } catch {
+                statusEl.textContent = "File import failed. Please try again.";
+            } finally {
+                fileInput.value = "";
+            }
+        }
+
+        async function removeDocument(documentId) {
+            hideInspector();
+            try {
+                const response = await fetch(`/api/v1/session/documents/${encodeURIComponent(documentId)}`, {
+                    method: "DELETE",
+                });
+                if (!response.ok) return;
+                const payload = await response.json();
+                renderSession(payload.session);
+                if (queryInput.value.trim().length >= 2) {
+                    await runSearch();
+                } else {
+                    resultsEl.replaceChildren();
+                    statusEl.textContent = "Document removed from session.";
+                }
+            } catch {
+                statusEl.textContent = "Could not remove document.";
+            }
+        }
+
+        async function clearSession() {
+            hideInspector();
+            renderErrors([]);
+            try {
+                const response = await fetch("/api/v1/session/clear", { method: "POST" });
+                if (!response.ok) throw new Error("Failed to clear session");
+                resultsEl.replaceChildren();
+                await loadSession();
+                statusEl.textContent = "Session cleared. All in-memory documents and search results were removed.";
+            } catch {
+                statusEl.textContent = "Failed to clear session.";
+            }
+        }
+
+        async function inspectJsonField(documentId, fieldPath) {
+            try {
+                const params = new URLSearchParams({ path: fieldPath });
+                const response = await fetch(
+                    `/api/v1/session/documents/${encodeURIComponent(documentId)}/field?${params}`
+                );
+                if (!response.ok) throw new Error("Field lookup failed");
+                const data = await response.json();
+
+                inspectorTitle.textContent = `${data.filename} — Cited JSON Field`;
+                inspectorPath.textContent = `${data.field_path} (${data.display_path})`;
+                inspectorValue.textContent = JSON.stringify(data.value, null, 2);
+
+                if (data.parent_preview) {
+                    inspectorParentLabel.textContent = `Surrounding object (${data.parent_path || "/"})`;
+                    inspectorParent.textContent = data.parent_preview;
+                    inspectorParentLabel.classList.remove("hidden");
+                    inspectorParent.classList.remove("hidden");
+                } else {
+                    inspectorParentLabel.classList.add("hidden");
+                    inspectorParent.classList.add("hidden");
+                }
+                inspector.classList.add("visible");
+                inspector.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            } catch {
+                statusEl.textContent = "Could not load cited JSON field.";
+            }
+        }
+
+        async function runSearch() {
+            resultsEl.replaceChildren();
+            hideInspector();
+
+            const query = queryInput.value.trim();
+            if (query.length < 2) {
+                statusEl.textContent = "Enter at least two characters.";
+                return;
+            }
+            if (currentDocumentCount === 0) {
+                statusEl.textContent = "No files loaded. Open one or more PDF or JSON files above to search offline.";
+                return;
+            }
+
+            statusEl.textContent = "Searching in-memory session…";
+
+            try {
+                const params = new URLSearchParams({ q: query, scope: "session" });
+                if (fileTypeFilter.value) {
+                    params.set("file_type", fileTypeFilter.value);
+                }
                 const response = await fetch(`/api/v1/search?${params}`);
                 if (!response.ok) throw new Error("Search request failed");
                 const data = await response.json();
 
                 for (const result of data.results) {
                     const item = document.createElement("li");
-                    const title = document.createElement("strong");
-                    title.textContent = result.citation_label;
-                    const excerpt = document.createElement("p");
-                    excerpt.textContent = result.excerpt;
-                    item.append(title, excerpt);
 
-                    if (result.official_url?.startsWith("https://")) {
-                        const link = document.createElement("a");
-                        link.href = result.official_url;
-                        link.textContent = "Open official source";
-                        item.append(link);
+                    const top = document.createElement("div");
+                    top.className = "result-top";
+
+                    const badge = document.createElement("span");
+                    badge.className = `badge ${result.file_type === "pdf" ? "badge-pdf" : "badge-json"}`;
+                    badge.textContent = result.file_type === "pdf" ? "PDF" : "JSON";
+
+                    const filename = document.createElement("span");
+                    filename.className = "result-filename";
+                    filename.textContent = result.filename || result.title;
+
+                    const location = document.createElement("span");
+                    location.className = "result-location";
+                    location.textContent = result.file_type === "pdf"
+                        ? `Page ${result.page_number}`
+                        : result.field_path;
+
+                    top.append(badge, filename, location);
+
+                    const excerpt = document.createElement("p");
+                    excerpt.className = "result-excerpt";
+                    excerpt.textContent = result.excerpt;
+
+                    const actions = document.createElement("div");
+                    actions.className = "result-actions";
+
+                    if (result.file_type === "pdf" && result.open_url?.startsWith("/api/v1/session/documents/")) {
+                        const openLink = document.createElement("a");
+                        openLink.className = "action-link";
+                        openLink.href = result.open_url;
+                        openLink.target = "_blank";
+                        openLink.rel = "noopener noreferrer";
+                        openLink.textContent = `Open PDF at page ${result.page_number}`;
+                        actions.append(openLink);
+                    } else if (result.file_type === "json" && result.document_id && result.field_path) {
+                        const inspectBtn = document.createElement("button");
+                        inspectBtn.type = "button";
+                        inspectBtn.className = "btn-secondary action-btn";
+                        inspectBtn.textContent = "Inspect JSON field";
+                        inspectBtn.addEventListener("click", () =>
+                            inspectJsonField(result.document_id, result.field_path)
+                        );
+                        actions.append(inspectBtn);
                     }
-                    results.append(item);
+
+                    item.append(top, excerpt, actions);
+                    resultsEl.append(item);
                 }
-                status.textContent = data.count
-                    ? `${data.count} ${data.count === 1 ? "result" : "results"}`
-                    : "No matching pages.";
+
+                statusEl.textContent = data.count
+                    ? `${data.count} ${data.count === 1 ? "match" : "matches"} in current session`
+                    : "No matching pages or JSON fields in current session.";
             } catch {
-                status.textContent = "Search failed. Please try again.";
+                statusEl.textContent = "Search failed. Please try again.";
+            }
+        }
+
+        fileInput.addEventListener("change", () => uploadFiles(fileInput.files));
+        clearSessionBtn.addEventListener("click", clearSession);
+        inspectorClose.addEventListener("click", hideInspector);
+        fileTypeFilter.addEventListener("change", () => {
+            if (queryInput.value.trim().length >= 2 && currentDocumentCount > 0) {
+                runSearch();
             }
         });
+
+        dropzone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            dropzone.classList.add("dragover");
+        });
+        dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+        dropzone.addEventListener("drop", (event) => {
+            event.preventDefault();
+            dropzone.classList.remove("dragover");
+            uploadFiles(event.dataTransfer?.files);
+        });
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            runSearch();
+        });
+
+        loadSession();
     </script>
 </body>
 

@@ -11,7 +11,8 @@ This repository is a working local demonstrator focused on traceable extraction 
 - **Source Governance & Registry**: Documented reuse policy ([docs/source-policy.md](docs/source-policy.md)) and initial official source registry ([sources/registry.yml](sources/registry.yml)) covering GDPR/DSGVO, EU AI Act, NIS2, BDSG, and BSIG. Full ISO standards and private/customer documents are deliberately excluded.
 - **HTML Ingestion & Legal Chunking**: Reproducible download, SHA-256 hashing, HTML text normalisation (`ingestion.py`), and article-level citation chunking (`chunking.py`).
 - **Azure AI Document Intelligence Extraction**: Local PDF page analysis with the `prebuilt-layout` model (`document_analysis.py`, `scripts/demo_document_intelligence.py`) returning Markdown content and per-page citation payloads saved locally under `data/processed/` (gitignored).
-- **Local Cited Search & Web UI**: Keyword search over saved Document Intelligence JSON files (`search.py`), exposed through a FastAPI backend (`/api/v1/search`, `/health`, `/docs`) and a lightweight search page (`/search`) returning page citations, cleaned excerpts, and official source links.
+- **Local Cited Search & Web UI**: Offline in-memory indexing and search across multiple uploaded text-based PDFs and JSON files (`session_store.py`), plus legacy keyword search over saved Document Intelligence JSON files (`search.py`), exposed through FastAPI (`/api/v1/session/*`, `/api/v1/search`, `/health`, `/docs`) and a local search UI (`/search`) with direct cited PDF page opening (`#page=N`), JSON field inspection, and one-click session cleanup.
+- **Standalone Windows Build**: Reproducible PyInstaller launcher (`launcher.py`, `packaging/windows/document-intelligence-navigator.spec`, `scripts/build_windows.ps1`) that runs offline on `127.0.0.1` without requiring a separate Python installation.
 - **Demo Corpus**: Verified locally on **BSI-Standard 200-1** (pages 20–21).
 - **Automated Checks**: GitHub Actions CI runs Ruff and pytest on Python 3.12 without Azure credentials or local extracted data.
 
@@ -31,8 +32,9 @@ flowchart LR
 | Step | Needs Azure? | Needs Saved Local Results? | Notes |
 | --- | --- | --- | --- |
 | `ruff check .` & `pytest` | No | No | Uses unit mocks and temporary fixtures only. |
+| Standalone Windows app (`DocumentIntelligenceNavigator.exe`) or `/search` session mode | No | No | Imports local text-based PDFs and JSON via a bounded in-memory multipart parser without Starlette temp-file spooling; no Python install or cloud calls required. |
 | `python scripts/demo_document_intelligence.py` | **Yes** | Writes `data/processed/*.document-intelligence.json` | Requires `.env` credentials and `data/raw/bsi-standard-200-1.pdf`; analyses pages 20–21 with `prebuilt-layout`. |
-| FastAPI app (`/search`, `/api/v1/search`, `/health`) | No | **Yes** (for non-empty search results) | Reads previously saved `data/processed/*.document-intelligence.json` locally with no Azure API calls. |
+| Legacy local demo API (`GET /api/v1/search?q=...&scope=local`) | No | **Yes** (for non-empty search results) | Reads previously saved `data/processed/*.document-intelligence.json` locally with no Azure API calls. |
 
 ## Windows PowerShell Quickstart
 
@@ -82,6 +84,36 @@ uvicorn eu_security_navigator.main:app --reload
 With the saved BSI-Standard 200-1 extraction in `data/processed/`, searching **`Informationssicherheit`** returns citations for **BSI-Standard 200-1 — page 20** and **page 21**, each with a cleaned excerpt, match score, and direct link to the official BSI PDF.
 
 ![Document Intelligence Navigator search page showing BSI-Standard 200-1 results for pages 20 and 21 with excerpts and official source links for the query Informationssicherheit](docs/images/search-demo.png)
+
+### 5. Build a standalone Windows release (no separate Python install required for end users)
+
+Install the optional `build` extra (`pyinstaller`) and run the reproducible PowerShell build script:
+
+```powershell
+pip install -e ".[dev,build]"
+.\scripts\build_windows.ps1
+```
+
+This creates:
+- `dist\DocumentIntelligenceNavigator\DocumentIntelligenceNavigator.exe` — standalone offline app launching on `http://127.0.0.1:8000/search` (or next free localhost port).
+- `dist\DocumentIntelligenceNavigator-windows-x64.zip` — portable Windows archive containing the executable and bundled runtime.
+- `dist\DocumentIntelligenceNavigator-windows-x64.zip.sha256` — SHA-256 checksum file for verifying downloads.
+
+You can smoke-test the built executable offline with synthetic >1 MB PDF and JSON files via:
+
+```powershell
+python scripts/smoke_test_windows_build.py
+```
+
+#### Verified Offline Release Behavior (`v0.1.0`)
+
+- **Offline launch**: Verified launching the standalone Windows build on `127.0.0.1` without a separate Python installation, `.env` file, or Azure credentials (`azure` and `dotenv` packages are excluded from the frozen bundle).
+- **PDF page jump**: Verified importing multi-page text-based PDFs, matching phrases on a specific page (including page 5), and opening the cited PDF inline at `/api/v1/session/documents/{id}/pdf#page=N` so the browser jumps directly to the cited page.
+- **Nested JSON field match**: Verified matching nested JSON values with exact RFC 6901 JSON Pointer citations and inline field inspection.
+- **Session cleanup & temporary-file check**: Clicking **Clear session** (or stopping the app with `Ctrl+C`) removes all in-memory files and search results (`0` matches and `404` on prior document URLs). In the packaged smoke test (`scripts/smoke_test_windows_build.py`) with `TEMP`/`TMP` redirected to an isolated directory and synthetic >1 MB PDF and JSON uploads, `0` files were observed in that directory during import, after session clear, and after exit (OS-level paging/hibernation and browser-managed caches are outside this check).
+- **Current scope limitation**: Supports text-based PDFs and UTF-8 JSON exports only; scanned/image-only PDFs are rejected with an explicit message (no OCR in `v0.1.0`).
+
+See [Release Notes (v0.1.0)](docs/releases/v0.1.0.md), [Product Brief](docs/product-brief.md), and [Threat Model](docs/threat-model.md).
 
 ## Responsible Data Handling
 
